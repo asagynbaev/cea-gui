@@ -1,0 +1,6 @@
+{
+  "name": "Shifts",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./Shifts.js"
+}
