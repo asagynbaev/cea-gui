@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
-import { Badge, Card, CardBody, CardHeader, Col, Row, Table } from "reactstrap";
+import { Badge, Card, CardBody, CardHeader, Col, Row, Table, Button } from "reactstrap";
 import axios from "axios";
 import Moment from "moment";
 import { BeatLoader } from 'react-spinners';
@@ -26,7 +26,7 @@ function UserRow(props) {
     <tr key={user.id.toString()}>
       <td>
         <Link to={userLink}>
-          {user.firstName} {user.lastName}
+          <h6>{user.firstName} {user.lastName}</h6>
         </Link>
       </td>
       <td>{Moment(user.birthDate).format("YYYY-MM-DD")}</td>
@@ -41,7 +41,9 @@ function UserRow(props) {
       </td>
       <td>{user.phone}</td>
       <td>
-      <Link to={editLink}>Редактировать</Link>
+      <Link to={editLink}>
+        <Button color="primary">Редактировать</Button>
+      </Link>
       </td>
     </tr>
   );
@@ -55,9 +57,14 @@ class Users extends Component {
       users: []
     };
   }
+  
+  goBack(){
+    this.props.history.goBack();
+  }
+
   getUsersData() {
     axios
-      .get(`https://ceaapi.herokuapp.com/employees/get/`, {})
+      .get(`https://ceaapi.herokuapp.com/employees/`, {})
       .then(res => {
         this.setState({ users: res.data, loading: false });
       })
@@ -96,12 +103,14 @@ class Users extends Component {
                     ))}
                   </tbody>
                 </Table>
+                <div className="col-xs-1 text-center">
+                  <BeatLoader sizeUnit={"px"} size={100} color={'#63c2de'} loading={this.state.loading} />
+                </div>
+                
               </CardBody>
             </Card>
           </Col>
-          <div style={{position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -50%)"}}>
-            <BeatLoader sizeUnit={"px"} size={100} color={'#63c2de'} loading={this.state.loading} />
-          </div>
+          
         </Row>
       </div>
     );

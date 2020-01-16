@@ -3,7 +3,7 @@ export default {
     {
       name: 'Панель',
       url: '/dashboard',
-      icon: 'icon-speedometer',
+      icon: 'icon-graph',
       badge: {
         variant: 'info',
         text: 'NEW',
@@ -16,12 +16,29 @@ export default {
     },
     {
       name: 'Смены',
-      url: '/shifts',
-      icon: 'icon-directions',
+      url: '',
+      icon: 'icon-calendar',
+      children: [
+            {
+              name: 'Автобусы',
+              url: '/buses',
+              icon: 'icon-speedometer',
+            },
+            {
+              name: 'Отели',
+              url: '/hotels',
+              icon: 'icon-home',
+            },
+            {
+              name: 'Магазины',
+              url: '/shops',
+              icon: 'icon-basket',
+            },
+          ]
     },
     {
       name: 'Справочники',
-      url: '/base/breadcrumbs',
+      url: '/helpers',
       icon: 'icon-list',
     },
     // {

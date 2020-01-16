@@ -36,6 +36,24 @@ const genderOptions = [
     { value: 3, label: 'D-VC-98' },
     { value: 4, label: 'D-VC-99' },
   ];
+  const advertOptions = [
+    { value: 1, label: 'От друзей' },
+    { value: 2, label: 'Facebook' },
+    { value: 3, label: 'Instagram' },
+    { value: 4, label: 'VK' },
+  ];
+  const cityzenshipOptions = [
+    { value: 1, label: 'CZE - Чехия' },
+    { value: 2, label: 'UKR - Украина' },
+    { value: 3, label: 'KAZ - Казахстан' },
+    { value: 4, label: 'RUS - Россия' },
+    { value: 5, label: 'KGZ - Кыргызстан' },
+    { value: 6, label: 'UZB - Узбекистан' },
+    { value: 7, label: 'TAJ - Таджикистан' },
+    { value: 8, label: 'BLR- Беларусь' },
+    { value: 9, label: 'MDA - Молдова' },
+    { value: 10, label: 'IND - Индия' },
+  ];
 
 class EditUser extends Component {
   constructor() {
@@ -46,6 +64,9 @@ class EditUser extends Component {
     this.handleChangeBuses = this.handleChangeBuses.bind(this);
     this.handleChangeShops = this.handleChangeShops.bind(this);
     this.handleChangeHotels = this.handleChangeHotels.bind(this);
+    this.handleChangeBusesTrain = this.handleChangeBusesTrain.bind(this);
+    this.handleChangeShopsTrain = this.handleChangeShopsTrain.bind(this);
+    this.handleChangeHotelsTrain = this.handleChangeHotelsTrain.bind(this);
 
     this.state = {
       firstName: '',
@@ -57,15 +78,20 @@ class EditUser extends Component {
       buses: false,
       shops: false,
       hotels: false,
+      busesTrain: false,
+      shopsTrain: false,
+      hotelsTrain: false,
       czech: 1,
       english: 1,
       insurance: 1,
-      visaType: 1
+      visaType: 1,
+      cityzenship: 1,
+      advert: 1
     };
   }
 
   getUsersData() {
-    axios.get(`https://ceaapi.herokuapp.com/employees/get/`, {})
+    axios.get(`https://ceaapi.herokuapp.com/employees/`, {})
         .then(res => { 
           this.setState({users: res.data}) 
           const userDet = this.state.users.find( user => user.id.toString() === this.props.match.params.id)
@@ -80,10 +106,15 @@ class EditUser extends Component {
                 buses: userDet.buses,
                 shops: userDet.shops,
                 hotels: userDet.hotels,
+                busesTrain: userDet.busesTrain,
+                shopsTrain: userDet.shopsTrain,
+                hotelsTrain: userDet.hotelsTrain,
                 czech: czechOptions.find(v => v.value === userDet.czech),
                 english: englishOptions.find(v => v.value === userDet.english),
                 insurance: insuranceOptions.find(v => v.value === userDet.insurance),
-                visaType: visaOptions.find(v => v.value === userDet.visaType)
+                visaType: visaOptions.find(v => v.value === userDet.visaType),
+                cityzenship: cityzenshipOptions.find(v => v.value === userDet.cityzenship),
+                advert: advertOptions.find(v => v.value === userDet.advert),
               }
           )
         })
@@ -107,6 +138,15 @@ class EditUser extends Component {
   handleChangeHotels(hotels) {
     this.setState({ hotels });
   }
+  handleChangeBusesTrain(busesTrain) {
+    this.setState({ busesTrain });
+  }
+  handleChangeShopsTrain(shopsTrain) {
+    this.setState({ shopsTrain });
+  }
+  handleChangeHotelsTrain(hotelsTrain) {
+    this.setState({ hotelsTrain });
+  }
   handleChangeGender = gender => {
     this.setState({ gender });
   }
@@ -121,6 +161,12 @@ class EditUser extends Component {
   }
   handleChangeVisa = visaType => {
     this.setState({ visaType });
+  }
+  handleChangeCityzenship = cityzenship => {
+    this.setState({ cityzenship });
+  }
+  handleChangeAdvert = advert => {
+    this.setState({ advert });
   }
   redirectToTarget = () => {
     this.props.history.push(`/users`)
@@ -139,10 +185,15 @@ class EditUser extends Component {
       Buses: this.state.buses,
       Shops: this.state.shops,
       Hotels: this.state.hotels,
+      BusesTrain: this.state.busesTrain,
+      ShopsTrain: this.state.shopsTrain,
+      HotelsTrain: this.state.hotelsTrain,
       Czech: parseFloat(this.state.czech.value),
       English: parseFloat(this.state.english.value),
       Insurance: parseFloat(this.state.insurance.value),
-      VisaType: parseFloat(this.state.visaType.value)
+      VisaType: parseFloat(this.state.visaType.value),
+      Cityzenship: parseFloat(this.state.cityzenship.value),
+      Advert: parseFloat(this.state.advert.value),
     });
     console.log(user);
     axios.put(`https://ceaapi.herokuapp.com/employees/${this.props.match.params.id}`, user, {
@@ -171,6 +222,8 @@ class EditUser extends Component {
     const { czech } = this.state;
     const { insurance } = this.state;
     const { visaType } = this.state;
+    const { advert } = this.state;
+    const { cityzenship } = this.state;
     return (
       <div className="animated fadeIn">
         <Row>
@@ -217,22 +270,22 @@ class EditUser extends Component {
                   </FormGroup>
                   <FormGroup row>
                     <Col md="2">
-                      <h4>
+                      <h5>
                         <Label htmlFor="buses">Автобусы</Label>
-                      </h4>
+                      </h5>
                       <Switch name="buses" onChange={this.handleChangeBuses} value={this.state.buses} checked={this.state.buses} />
                     </Col>
                     <Col md="2">
-                      <h4>
-                        <Label htmlFor="password-input">Магазины</Label>
-                      </h4>
-                      <Switch onChange={this.handleChangeShops} value={this.state.shops} checked={this.state.shops} />
+                      <h5>
+                        <Label htmlFor="password-input">Отели</Label>
+                      </h5>
+                      <Switch onChange={this.handleChangeHotels} value={this.state.hotels} checked={this.state.hotels} />
                     </Col>
                     <Col md="2">
-                      <h4>
-                        <Label htmlFor="password-input">Отели</Label>
-                      </h4>
-                      <Switch onChange={this.handleChangeHotels} value={this.state.hotels} checked={this.state.hotels} />
+                      <h5>
+                        <Label htmlFor="password-input">Магазины</Label>
+                      </h5>
+                      <Switch onChange={this.handleChangeShops} value={this.state.shops} checked={this.state.shops} />
                     </Col>
                     <Col md="3">
                       <Label htmlFor="password-input">Чешский <span className="required">*</span></Label>
@@ -241,6 +294,34 @@ class EditUser extends Component {
                     <Col md="3">
                       <Label htmlFor="password-input">Английский <span className="required">*</span></Label>
                       <Select value={english} onChange={this.handleChangeEnglish} options={englishOptions} placeholder="Уровень английского" />
+                    </Col>
+                  </FormGroup>
+                  <FormGroup row>
+                    <Col md="2">
+                      <h5>
+                        <Label htmlFor="buses">Обучение</Label>
+                      </h5>
+                      <Switch name="buses" onChange={this.handleChangeBusesTrain} value={this.state.busesTrain} checked={this.state.busesTrain} />
+                    </Col>
+                    <Col md="2">
+                      <h5>
+                        <Label htmlFor="password-input">Обучение</Label>
+                      </h5>
+                      <Switch onChange={this.handleChangeHotelsTrain} value={this.state.hotelsTrain} checked={this.state.hotelsTrain} />
+                    </Col>
+                    <Col md="2">
+                      <h5>
+                        <Label htmlFor="password-input">Обучение</Label>
+                      </h5>
+                      <Switch onChange={this.handleChangeShopsTrain} value={this.state.shopsTrain} checked={this.state.shopsTrain} />
+                    </Col>
+                    <Col md="3">
+                      <Label htmlFor="password-input">Откуда Вы узнали об Агентуре <span className="required">*</span></Label>
+                      <Select value={advert} onChange={this.handleChangeAdvert} options={advertOptions} placeholder="Выберите источник" />
+                    </Col>
+                    <Col md="3">
+                      <Label htmlFor="password-input">Гражданство <span className="required">*</span></Label>
+                      <Select value={cityzenship} onChange={this.handleChangeCityzenship} options={cityzenshipOptions} placeholder="Выберите страну" />
                     </Col>
                   </FormGroup>
                   <FormGroup row>

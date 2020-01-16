@@ -160,7 +160,7 @@ class AddUserForm extends Component {
       Advert: parseFloat(this.state.advert.value),
     });
     console.log(user);
-    axios.post(`https://ceaapi.herokuapp.com/employees/`, user, {
+    axios.post(`https://ceaapi.herokuapp.com/employees/saveemployee`, user, {
         headers: { "Content-Type": "application/json" }
       }).then((response) => {
         NotificationManager.success('You have added a new employee!', 'Successful!', 2000);

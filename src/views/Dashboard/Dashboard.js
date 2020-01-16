@@ -229,8 +229,8 @@ const cardChartOpts4 = {
 // Social Box Chart
 const socialBoxData = [
   { data: [65, 59, 84, 84, 51, 55, 40], label: 'facebook' },
-  { data: [1, 13, 9, 17, 34, 41, 38], label: 'twitter' },
-  { data: [78, 81, 80, 45, 34, 12, 40], label: 'linkedin' },
+  { data: [1, 13, 9, 17, 34, 41, 38], label: 'instagram' },
+  { data: [78, 81, 80, 45, 34, 12, 40], label: 'vk' },
   { data: [35, 23, 56, 22, 97, 23, 64], label: 'google' },
 ];
 
@@ -606,9 +606,9 @@ class Dashboard extends Component {
                     <Row>
                       <Col sm="6">
                         <div className="callout callout-warning">
-                          <small className="text-muted">Pageviews</small>
+                          <small className="text-muted">Сотрудники</small>
                           <br />
-                          <strong className="h4">78,623</strong>
+                          <strong className="h4">7</strong>
                           <div className="chart-wrapper">
                             <Line data={makeSparkLineData(2, brandWarning)} options={sparklineChartOpts} width={100} height={30} />
                           </div>
@@ -630,7 +630,7 @@ class Dashboard extends Component {
                       <div className="progress-group">
                         <div className="progress-group-header">
                           <i className="icon-user progress-group-icon"></i>
-                          <span className="title">Male</span>
+                          <span className="title">Мужской</span>
                           <span className="ml-auto font-weight-bold">43%</span>
                         </div>
                         <div className="progress-group-bars">
@@ -640,7 +640,7 @@ class Dashboard extends Component {
                       <div className="progress-group mb-5">
                         <div className="progress-group-header">
                           <i className="icon-user-female progress-group-icon"></i>
-                          <span className="title">Female</span>
+                          <span className="title">Женский</span>
                           <span className="ml-auto font-weight-bold">37%</span>
                         </div>
                         <div className="progress-group-bars">
@@ -650,7 +650,7 @@ class Dashboard extends Component {
                       <div className="progress-group">
                         <div className="progress-group-header">
                           <i className="icon-globe progress-group-icon"></i>
-                          <span className="title">Organic Search</span>
+                          <span className="title">От друзей</span>
                           <span className="ml-auto font-weight-bold">191,235 <span className="text-muted small">(56%)</span></span>
                         </div>
                         <div className="progress-group-bars">
@@ -670,7 +670,7 @@ class Dashboard extends Component {
                       <div className="progress-group">
                         <div className="progress-group-header">
                           <i className="icon-social-twitter progress-group-icon"></i>
-                          <span className="title">Twitter</span>
+                          <span className="title">VK</span>
                           <span className="ml-auto font-weight-bold">37,564 <span className="text-muted small">(11%)</span></span>
                         </div>
                         <div className="progress-group-bars">
@@ -680,7 +680,7 @@ class Dashboard extends Component {
                       <div className="progress-group">
                         <div className="progress-group-header">
                           <i className="icon-social-linkedin progress-group-icon"></i>
-                          <span className="title">LinkedIn</span>
+                          <span className="title">Instagram</span>
                           <span className="ml-auto font-weight-bold">27,319 <span className="text-muted small">(8%)</span></span>
                         </div>
                         <div className="progress-group-bars">

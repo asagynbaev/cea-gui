@@ -12,7 +12,7 @@ class User extends Component {
         };
       }
       getUsersData() {
-        axios.get(`https://ceaapi.herokuapp.com/employees/get/`, {})
+        axios.get(`https://ceaapi.herokuapp.com/employees/`, {})
             .then(res => { 
               this.setState({users: res.data}) 
               const userDet = this.state.users.find( user => user.id.toString() === this.props.match.params.id)
