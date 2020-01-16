@@ -91,7 +91,7 @@ class Shifts extends Component {
         ShiftDate: this.state.shiftDate,
         OrganizationId: parseFloat(this.props.match.params.id),
       });
-      axios.post(`http://localhost:5000/shifts/`, user, {
+      axios.post(`https://ceaapi.herokuapp.com/shifts/`, user, {
           headers: { "Content-Type": "application/json" }
         }).then((response) => {
           NotificationManager.success('Смены успешно созданы', 'Успех!', 2000);

@@ -40,7 +40,7 @@ class AssignShift extends Component {
 
   getUsersData() {
     axios
-    .get(`http://localhost:5000/shifts/${this.props.myParams.id}`, {})
+    .get(`https://ceaapi.herokuapp.com/shifts/${this.props.myParams.id}`, {})
       .then(res => {
         this.setState({ users: res.data, loading: false });
       })
