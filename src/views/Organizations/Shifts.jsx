@@ -5,7 +5,6 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { BeatLoader } from 'react-spinners';
 import moment from 'moment';
 import axios from 'axios';
-import './style.css'
 import AssignShift from "./AssignShift";
 
 function UserRow(props) {
@@ -14,9 +13,12 @@ function UserRow(props) {
   return (
     <tr key={user.id.toString()}>
       <td>
-        <input className="check1" type="checkbox" name="shifts" value={user.id} /> &nbsp; &nbsp;
-        <span className="checkboxtext">{user.positionName}</span>
+        <label className="switch switch-xs switch-pill switch-label switch-success" style={{ marginBottom:'0rem'}}>
+          <input type="checkbox" className="switch-input" name="shifts" value={user.id} />
+          <span className="switch-slider" data-checked="On" data-unchecked="Off"></span>
+        </label>
       </td>
+      <td>{user.positionName}</td>
       <td>{moment(user.defaultTime).format("LT")}</td>
     </tr>
   );
@@ -33,7 +35,8 @@ class Shifts extends Component {
       selectedShifts: [],
       users: [],
       loading: true,
-      shiftDate: moment().add(1, 'day').format(moment.HTML5_FMT.DATE)
+      shiftDate: moment().add(1, 'day').format(moment.HTML5_FMT.DATE),
+      updateComponent: false
     };
   }
 
@@ -47,12 +50,8 @@ class Shifts extends Component {
   getUsersData() {
     axios
     .get(`https://ceaapi.herokuapp.com/positions/${this.props.match.params.id}`, {})
-      .then(res => {
-        this.setState({ users: res.data, loading: false });
-      })
-      .catch(error => {
-        console.log(error);
-      });
+      .then(res => { this.setState({ users: res.data, loading: false }); })
+      .catch(error => { console.log(error); });
   }
 
   componentDidMount() {
@@ -61,10 +60,11 @@ class Shifts extends Component {
 
   uncheck()
   {
-    var inputs = document.querySelectorAll('.check1');
+    var inputs = document.querySelectorAll('.switch-input');
     for (var i = 0; i < inputs.length; i++) {
       inputs[i].checked = false;
     }
+    this.setState({updateComponent: false});
   }
 
   save() {
@@ -93,7 +93,7 @@ class Shifts extends Component {
       });
       axios.post(`https://ceaapi.herokuapp.com/shifts/`, user, {
           headers: { "Content-Type": "application/json" }
-        }).then((response) => {
+        }).then(() => {
           NotificationManager.success('Смены успешно созданы', 'Успех!', 2000);
           this.uncheck();
         }, (error) => {
@@ -105,7 +105,8 @@ class Shifts extends Component {
           {
             selectedShifts: [],
             loading: false,
-            shiftDate: moment().add(1, 'day').format(moment.HTML5_FMT.DATE)
+            shiftDate: moment().add(1, 'day').format(moment.HTML5_FMT.DATE),
+            updateComponent: true,
           }
         );
     }
@@ -124,9 +125,10 @@ class Shifts extends Component {
                 <Input onChange={this.handleChange} type="date" value={this.state.shiftDate} name="shiftDate" placeholder="date" required />
               </CardHeader>
               <CardBody>
-                <Table>
+                <Table className="table table-sm">
                   <thead>
                     <tr>
+                      <th scope="col">Выбрать</th>
                       <th scope="col">Позиция</th>
                       <th scope="col">Время</th>
                     </tr>
@@ -141,17 +143,17 @@ class Shifts extends Component {
                   <BeatLoader sizeUnit={"px"} size={100} color={'#63c2de'} loading={this.state.loading} />
                 </div>
                 <Button type="submit" size="sm" color="primary">
-                  <i className="fa fa-dot-circle-o"></i> Сохранить
+                  <i className="fa fa-dot-circle-o"></i> Создать
                 </Button>
                 &nbsp;
                 <Button onClick={this.uncheck} size="sm" color="danger">
-                  <i className="fa fa-ban"></i> Отмена
+                  <i className="fa fa-ban"></i> Сбросить
                 </Button>
               </CardBody>
               </Form>
             </Card>
           </Col>
-          <Col xl={6}><AssignShift myParams={{ id: this.props.match.params.id }}/></Col>
+          <Col xl={7}><AssignShift myParams={{ id: this.props.match.params.id, update: this.state.updateComponent }}/></Col>
         </Row>
         <NotificationContainer/>
       </div>

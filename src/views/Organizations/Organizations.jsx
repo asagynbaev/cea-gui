@@ -19,15 +19,15 @@ function UserRow(props) {
       <td>{user.dressCode}</td>
       <td>
         <Link to={editLink}>
-          <Button color="primary">Редактировать</Button>
+          <Button className="btn btn-ghost-info">Редактировать</Button>
         </Link>
         &nbsp;
         <Link to={positions}>
-          <Button  color="primary">Позиции</Button>
+          <Button className="btn btn-ghost-warning">Позиции</Button>
         </Link>
         &nbsp;
         <Link to={shiftLink}>
-          <Button color="primary">Смены</Button>
+          <Button className="btn btn-ghost-success">Смены</Button>
         </Link>
       </td>
     </tr>
@@ -124,7 +124,7 @@ class Organizations extends Component {
               </CardHeader>
               <CardBody>
               <Form onSubmit={this.handleSubmit}>
-                <Table>
+                <Table className="table table-sm">
                   <thead>
                     <tr>
                       <th scope="col">Название</th>

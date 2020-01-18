@@ -13,7 +13,7 @@ function UserRow(props) {
     <tr key={user.id.toString()}>
       <td>{user.positionName}</td>
       <td>{Moment(user.defaultTime).format("LT")}</td>
-      <td><Button color="primary">Редактировать</Button></td>
+      <td><Button color="primary" disabled>Редактировать</Button></td>
     </tr>
   );
 }
@@ -94,7 +94,7 @@ class Positions extends Component {
               </CardHeader>
               <CardBody>
               <Form onSubmit={this.handleSubmit.bind(this)}>
-                <Table>
+                <Table className="table table-sm">
                   <thead>
                     <tr>
                       <th scope="col">Название</th>

@@ -42,7 +42,7 @@ function UserRow(props) {
       <td>{user.phone}</td>
       <td>
       <Link to={editLink}>
-        <Button color="primary">Редактировать</Button>
+        <Button  className="btn btn-ghost-info">Редактировать</Button>
       </Link>
       </td>
     </tr>
@@ -87,7 +87,7 @@ class Users extends Component {
                 <Link to="/users/adduserform">Добавить сотрудника</Link>
               </CardHeader>
               <CardBody>
-                <Table>
+                <Table className="table table-sm">
                   <thead>
                     <tr>
                       <th scope="col">ФИО</th>
