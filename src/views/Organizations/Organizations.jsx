@@ -13,21 +13,21 @@ function UserRow(props) {
 
   return (
     <tr key={user.id.toString()}>
-      <td>{user.name}</td>
+      <td>
+        <Link to={shiftLink}>
+          <h6>{user.name}</h6>
+        </Link>
+      </td>
       <td>{user.address}</td>
       <td>{user.phone}</td>
       <td>{user.dressCode}</td>
       <td>
         <Link to={editLink}>
-          <Button className="btn btn-ghost-info">Редактировать</Button>
+          <Button color="primary" title="Редактировать"><i className="fa fa-pencil"></i></Button>
         </Link>
         &nbsp;
         <Link to={positions}>
-          <Button className="btn btn-ghost-warning">Позиции</Button>
-        </Link>
-        &nbsp;
-        <Link to={shiftLink}>
-          <Button className="btn btn-ghost-success">Смены</Button>
+          <Button color="warning" title="Позиции"><i className="fa fa-users" aria-hidden="true"></i></Button>
         </Link>
       </td>
     </tr>

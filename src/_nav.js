@@ -34,6 +34,11 @@ export default {
               url: '/shops',
               icon: 'icon-basket',
             },
+            {
+              name: 'Кейтеринг',
+              url: '/catering',
+              icon: 'icon-badge',
+            },
           ]
     },
     {

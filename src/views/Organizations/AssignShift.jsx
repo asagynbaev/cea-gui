@@ -1,80 +1,40 @@
 import React, { Component } from "react";
-import { Card, CardBody, CardHeader, Table, Button, Form, Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
-import 'react-big-calendar/lib/css/react-big-calendar.css';
+import { Card, CardBody, CardHeader, Table, Button, Pagination, PaginationItem, PaginationLink} from "reactstrap";
 import { BeatLoader } from 'react-spinners';
 import moment from 'moment';
 import axios from 'axios';
-import ReactAutocomplete from 'react-autocomplete';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
+import Modals from "./Modals";
 
 class AssignShift extends Component {
   constructor(props) {
     super(props);
+    this.pageSize = 8;
 
-    this.handleChange = this.handleChange.bind(this);
-    this.toggle = this.toggle.bind(this);
-    this.toggle_save = this.toggle_save.bind(this);
-    
     this.state = {
-        modal: false,
-        selectedShifts: [],
         users: [],
         shifts: [],
-        loading: true,
-        value: '',
         userId: null,
-        selectedItem: null,
+        loading: true,
+        showMessage: false,
+        pagesCount: 0,
+        currentPage: 0,
         shiftDate: moment().add(1, 'day').format(moment.HTML5_FMT.DATE)
     };
   }
 
-  toggle() {
-    this.setState({ modal: !this.state.modal });
+  handleClick(e, index) {
+    e.preventDefault();
+    this.setState({
+      currentPage: index
+    });
   }
 
-  setId(id) {
-    this.setState({selectedItem: id}, () => {
-      this.toggle();
-  });
-  }
-
-  toggle_save(e) {
-    if(this.state.userId === null) {
-      NotificationManager.error('Вы не выбрали ни одного сотрудника', 'Ошибка!', 2000);
-    }
-    else {
-      const user = JSON.stringify({
-        Id: parseFloat(this.state.selectedItem),
-        EmployeeId: parseFloat(this.state.userId),
-      });
-      axios.put(`https://ceaapi.herokuapp.com/shifts/${this.state.selectedItem}`, user, {
-          headers: { "Content-Type": "application/json" }
-        }).then((response) => {
-          NotificationManager.success('Смена успешно назначена!', 'Успех!', 2000);
-          this.getUsersData();
-          console.log(response);
-        }, (error) => {
-          NotificationManager.error('Error while changing an organization! ' + error, 'Error!');
-          if (error.response) {
-            console.log(error.response.data);
-            console.log(error.response.status);
-            console.log(error.response.headers);
-        } else if (error.request) {
-            console.log(error.request);
-        } else {
-            console.log('Error', error.message);
-        }
-        console.log(error);
-        });
-        e.preventDefault();
-        this.setState({ selectedItem: null, userId: null, value: '', modal: !this.state.modal });
-    }
-  }
-
-  handleChange = e => {
-    let nam = e.target.name;
-    let val = e.target.value;
-    this.setState({ [nam]: val });
+  _showMessage = (bool, int) => {
+    this.setState({
+      showMessage: bool,
+      userId: int
+    });
   };
 
   getUsersData() {
@@ -83,83 +43,88 @@ class AssignShift extends Component {
       axios.get(`https://ceaapi.herokuapp.com/employees/autocomplete`)
     ])
     .then(axios.spread((shifts, users) => {
-      this.setState({ shifts: shifts.data, users: users.data, loading: false });
+      this.setState({ 
+        shifts: shifts.data.filter(d => d.employeeId === null).sort(function(a,b){return new Date(a.shiftDate) - new Date(b.shiftDate)}), 
+        users: users.data, 
+        loading: false,
+        pagesCount: Math.ceil(shifts.data.filter(d => d.employeeId === null).length / this.pageSize)
+      });
     }));
   }
+  
+  handleDelete = (itemId) => {
+    axios.delete(`https://ceaapi.herokuapp.com/shifts/${itemId}`)
+    .then(response => {
+      NotificationManager.success('Смена успешно удалена!', 'Успех!', 2000);
+    }, (error) => {
+      NotificationManager.error('Error while deleting shift! ' + error, 'Error!');
+      console.log(error);
+    });
+  }
 
-  // componentDidMount() {
-  //   this.getUsersData();
-  // }
-
-  componentWillReceiveProps() {
+  componentDidMount() {
     this.getUsersData();
   }
 
-
   render() {
-    console.log(this.state.users);
     const shiftList = this.state.shifts;
+    const currentPage = this.state.currentPage;
     return (
       <div className="animated fadeIn">
-            <Card>
-            <Form id="assignShift" onSubmit={this.handleSubmit}>
-              <CardHeader>
-                <i className="fa fa-briefcase"></i> Все смены
-              </CardHeader>
-              <CardBody>
-                <Table className="table table-sm">
-                  <thead>
-                    <tr>
-                      <th scope="col">Дата</th>
-                      <th scope="col">Позиция</th>
-                      <th scope="col">Время</th>
-                      <th scope="col">Исполнитель</th>
-                      <th scope="col">Действия</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {shiftList.map((user, index) => (
-                      <tr key={user.id.toString()}>
-                      <td>{moment(user.shiftDate).format("DD-MM-YYYY")}</td>
-                      <td>{user.positionName}</td>
-                      <td>{moment(user.defaultTime).format("LT")}</td>
-                      <td>
-                        {user.employeeId == null ? <Button onClick={this.setId.bind(this, user.id)} className="btn btn-ghost-primary">Назначить</Button> : this.state.users.find(x => x.id === user.employeeId).fullName}
-                      </td>
-                      <td><Button disabled className="btn btn-ghost-danger">Удалить</Button></td>
-                    </tr>
-                    ))}
-                  </tbody>
-                </Table>
-                <div className="col-xs-1 text-center">
-                  <BeatLoader sizeUnit={"px"} size={100} color={'#63c2de'} loading={this.state.loading} />
+          <Card>
+            <CardHeader>
+              <i className="fa fa-briefcase"></i> Открытые смены
+            </CardHeader>
+            <CardBody>
+              <Table className="table table-sm">
+                <thead>
+                  <tr>
+                    <th scope="col">Дата</th>
+                    <th scope="col">Позиция</th>
+                    <th scope="col">Действия</th>
+                  </tr>
+                </thead>
+                <tbody>
+                {shiftList.slice(currentPage * this.pageSize, (currentPage + 1) * this.pageSize).map((user) => (
+                    <tr key={user.id.toString()}>
+                    <td>{moment(user.shiftDate).format("DD-MM-YYYY")}</td>
+                    <td>{moment(user.defaultTime).format("HH:mm")} {user.positionName}</td>
+                    <td>
+                      <Button onClick={this._showMessage.bind(null, true, user.id)}  color="primary" title="Назначить">
+                        <i className="fa fa-arrow-right"></i>
+                      </Button> &nbsp;
+                      <Button onClick={this.handleDelete.bind(this, user.id)} color="danger" title="Удалить">
+                        <i className="fa fa-trash"></i>
+                      </Button>
+                    </td>
+                  </tr>
+                  ))}
+                </tbody>
+              </Table>
+              <div className="pagination-wrapper">
+                  <Pagination aria-label="Page navigation example">
+                    <PaginationItem disabled={currentPage <= 0}>
+                      <PaginationLink onClick={e => this.handleClick(e, currentPage - 1)} previous href="#" />
+                    </PaginationItem>
+                    {[...Array(this.state.pagesCount)].map((page, i) => 
+                      <PaginationItem active={i === currentPage} key={i}>
+                        <PaginationLink onClick={e => this.handleClick(e, i)} href="#">
+                          {i + 1}
+                        </PaginationLink>
+                      </PaginationItem>
+                    )}
+                    <PaginationItem disabled={currentPage >= this.state.pagesCount - 1}>
+                      <PaginationLink onClick={e => this.handleClick(e, currentPage + 1)} next href="#" />
+                    </PaginationItem>
+                  </Pagination>
                 </div>
-              </CardBody>
-              </Form>
-            </Card>
-            <Modal isOpen={this.state.modal} toggle={this.toggle} className={this.props.className}>
-                  <ModalHeader toggle={this.toggle}>Назначение смены</ModalHeader>
-                  <ModalBody>
-                    <ReactAutocomplete
-                      items={this.state.users}
-                      shouldItemRender={(item, value) => item.fullName.toLowerCase().indexOf(value.toLowerCase()) > -1}
-                      getItemValue={item => item.fullName}
-                      renderItem={(item, highlighted) =>
-                        <div key={item.id} style={{ backgroundColor: highlighted ? '#eee' : 'transparent'}}>
-                          {item.fullName}
-                        </div>
-                      }
-                      value={this.state.value}
-                      onChange={e => this.setState({ value: e.target.value })}
-                      onSelect={(value, item) => this.setState({ value, userId: item.id })}
-                    />
-                  </ModalBody>
-                  <ModalFooter>
-                    <Button color="primary" onClick={this.toggle_save}>Сохранить</Button>{' '}
-                    <Button color="secondary" onClick={this.toggle}>Отмена</Button>
-                  </ModalFooter>
-                </Modal>
-                <NotificationContainer/>
+              <div className="col-xs-1 text-center">
+                <BeatLoader sizeUnit={"px"} size={50} color={'#63c2de'} loading={this.state.loading} />
+              </div>
+            </CardBody>
+          </Card>
+          <NotificationContainer/>
+          {this.state.showMessage && <Modals pars={{ users: this.state.users, id: this.state.userId }} />}
       </div>
     );
   }

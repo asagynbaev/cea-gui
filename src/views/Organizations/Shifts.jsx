@@ -1,42 +1,50 @@
 import React, { Component } from "react";
 import { Card, CardBody, CardHeader, Col, Row, Table, Input, Button, Form } from "reactstrap";
 import { NotificationContainer, NotificationManager } from 'react-notifications';
-import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { BeatLoader } from 'react-spinners';
 import moment from 'moment';
+import 'moment/locale/ru';
 import axios from 'axios';
 import AssignShift from "./AssignShift";
+import AllShifts from "./AllShifts";
+//import { Calendar, momentLocalizer } from 'react-big-calendar';
+import 'react-big-calendar/lib/css/react-big-calendar.css';
+import Schedulerss from "./Schedulerss";
 
-function UserRow(props) {
-  const user = props.user;
-
-  return (
-    <tr key={user.id.toString()}>
-      <td>
-        <label className="switch switch-xs switch-pill switch-label switch-success" style={{ marginBottom:'0rem'}}>
-          <input type="checkbox" className="switch-input" name="shifts" value={user.id} />
-          <span className="switch-slider" data-checked="On" data-unchecked="Off"></span>
-        </label>
-      </td>
-      <td>{user.positionName}</td>
-      <td>{moment(user.defaultTime).format("LT")}</td>
-    </tr>
-  );
-}
+moment.locale('ru');
+//const localizer = momentLocalizer(moment);
 
 class Shifts extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
+    const now = new Date();
+    const events = [
+      {
+          id: 14,
+          title: 'Today',
+          start: new Date(new Date().setHours(new Date().getHours() + 6)),
+          end: new Date(new Date().setHours(new Date().getHours() + 9)),
+      },
+      {
+          id: 15,
+          title: 'Point in Time Event',
+          start: now,
+          end: now,
+      },
+    ]
+
 
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     
     this.state = {
       selectedShifts: [],
-      users: [],
+      selectedItem: null,
+      positions: [],
+      shifts: [],
       loading: true,
       shiftDate: moment().add(1, 'day').format(moment.HTML5_FMT.DATE),
-      updateComponent: false
+      events
     };
   }
 
@@ -44,37 +52,50 @@ class Shifts extends Component {
     let nam = e.target.name;
     let val = e.target.value;
     this.setState({ [nam]: val });
-    console.log(e.target.value);
   };
 
   getUsersData() {
     axios
-    .get(`https://ceaapi.herokuapp.com/positions/${this.props.match.params.id}`, {})
-      .then(res => { this.setState({ users: res.data, loading: false }); })
-      .catch(error => { console.log(error); });
+      .get(`https://ceaapi.herokuapp.com/positions/${this.props.match.params.id}`, {})
+      .then(res => {
+        this.setState({ positions: res.data, loading: false });
+      })
+      .catch(error => {
+        console.log(error);
+      });
   }
 
   componentDidMount() {
     this.getUsersData();
   }
 
-  uncheck()
-  {
+  uncheck() {
     var inputs = document.querySelectorAll('.switch-input');
+    var sss = document.getElementsByName('inps');
     for (var i = 0; i < inputs.length; i++) {
       inputs[i].checked = false;
     }
-    this.setState({updateComponent: false});
+    for(var f = 0; f < sss.length; f++)
+    {
+      sss[f].value = "1";
+    }
   }
 
   save() {
     var checkboxes = document.getElementsByName('shifts');
     let vals = [];
-    for (var i=0, n=checkboxes.length;i<n;i++) 
+    for (var i=0, n=checkboxes.length; i<n; i++) 
     {
         if (checkboxes[i].checked)
-            vals.push(checkboxes[i].value);
+        {
+          let inp = document.getElementById(checkboxes[i].value);
+          vals.push({ 
+            id: parseFloat(checkboxes[i].value), 
+            amount: parseFloat(inp.value) 
+          });
+        }
     }
+    console.log(vals);
     return vals;
   }
 
@@ -86,12 +107,12 @@ class Shifts extends Component {
     }
     else
     {
-      const user = JSON.stringify({
-        positionId: vals,
+      const shift = JSON.stringify({
+        Amounts: vals,
         ShiftDate: this.state.shiftDate,
         OrganizationId: parseFloat(this.props.match.params.id),
       });
-      axios.post(`https://ceaapi.herokuapp.com/shifts/`, user, {
+      axios.post(`https://ceaapi.herokuapp.com/shifts/`, shift, {
           headers: { "Content-Type": "application/json" }
         }).then(() => {
           NotificationManager.success('Смены успешно созданы', 'Успех!', 2000);
@@ -105,15 +126,14 @@ class Shifts extends Component {
           {
             selectedShifts: [],
             loading: false,
-            shiftDate: moment().add(1, 'day').format(moment.HTML5_FMT.DATE),
-            updateComponent: true,
+            shiftDate: moment().add(1, 'day').format(moment.HTML5_FMT.DATE)
           }
         );
     }
   }
 
   render() {
-    const userList = this.state.users;
+    const positionsList = this.state.positions;    
     return (
       <div className="animated fadeIn">
         <Row>
@@ -130,17 +150,26 @@ class Shifts extends Component {
                     <tr>
                       <th scope="col">Выбрать</th>
                       <th scope="col">Позиция</th>
-                      <th scope="col">Время</th>
+                      <th scope="col">Кол.</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {userList.map((user, index) => (
-                      <UserRow key={index} user={user} />
+                    {positionsList.map((position) => (
+                      <tr key={position.id.toString()}>
+                        <td>
+                          <label className="switch switch-xs switch-pill switch-label switch-success" style={{ marginBottom:'0rem'}}>
+                            <input type="checkbox" className="switch-input" name="shifts" value={position.id} />
+                            <span className="switch-slider" data-checked="On" data-unchecked="Off"></span>
+                          </label>
+                        </td>
+                        <td style={{width: '46%'}}>{moment(position.defaultTime).format("HH:mm")} {position.positionName}</td>
+                        <td><Input onChange={this.handleChange} type="number" name="inps" defaultValue="1" id={position.id} required /></td>
+                      </tr>
                     ))}
                   </tbody>
                 </Table>
                 <div className="col-xs-1 text-center">
-                  <BeatLoader sizeUnit={"px"} size={100} color={'#63c2de'} loading={this.state.loading} />
+                  <BeatLoader sizeUnit={"px"} size={50} color={'#63c2de'} loading={this.state.loading} />
                 </div>
                 <Button type="submit" size="sm" color="primary">
                   <i className="fa fa-dot-circle-o"></i> Создать
@@ -153,7 +182,31 @@ class Shifts extends Component {
               </Form>
             </Card>
           </Col>
-          <Col xl={7}><AssignShift myParams={{ id: this.props.match.params.id, update: this.state.updateComponent }}/></Col>
+          <Col xl={4}><AssignShift myParams={{ id: this.props.match.params.id }}/></Col>
+          <Col xl={5}><AllShifts myParams={{ id: this.props.match.params.id }}/></Col>
+        </Row>
+        <Row>
+          <Col xl={12}>
+            <Card>
+              <CardBody>
+              <div>
+              <Schedulerss/>
+                {/* <Calendar
+                  events={this.state.events}
+                  defaultView={'week'}
+                  timeslots={1} //сколько будет ячеек во дне
+                  step={180} // шаг календаря(в минутах)
+                  views={['week', 'month', 'agenda']} 
+                  startAccessor="start"
+                  //endAccessor="end"
+                  defaultDate={moment().toDate()}
+                  localizer={localizer}
+                /> */}
+              </div>
+              
+              </CardBody>
+              </Card>
+          </Col>
         </Row>
         <NotificationContainer/>
       </div>

@@ -42,7 +42,7 @@ function UserRow(props) {
       <td>{user.phone}</td>
       <td>
       <Link to={editLink}>
-        <Button  className="btn btn-ghost-info">Редактировать</Button>
+        <Button color="primary" title="Редактировать"><i className="fa fa-pencil"></i></Button>
       </Link>
       </td>
     </tr>
@@ -80,7 +80,7 @@ class Users extends Component {
     return (
       <div className="animated fadeIn">
         <Row>
-          <Col xl={12}>
+          <Col xl={10}>
             <Card>
               <CardHeader>
                 <i className="fa fa-users"></i>

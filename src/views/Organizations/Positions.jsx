@@ -13,7 +13,7 @@ function UserRow(props) {
     <tr key={user.id.toString()}>
       <td>{user.positionName}</td>
       <td>{Moment(user.defaultTime).format("LT")}</td>
-      <td><Button color="primary" disabled>Редактировать</Button></td>
+      <td><Button color="primary" title="Редактировать"><i className="fa fa-pencil"></i></Button></td>
     </tr>
   );
 }
@@ -87,7 +87,7 @@ class Positions extends Component {
     return (
       <div className="animated fadeIn">
         <Row>
-          <Col xl={12}>
+          <Col xl={5}>
             <Card>
               <CardHeader>
                 <i className="fa fa-briefcase"></i>Все позиции
