@@ -1,36 +1,11 @@
 const DemoData = {
-    resources: [
-        {
-            id: 'r0',
-            name: '08:30 Линка 1',
-            groupOnly: true,
-        },
-        {
-            id: 'r4',
-            name: '09:00 Линка 2',
-        },
-        {
-            id: 'r5',
-            name: '09:15 Линка 3',
-        },
-        {
-            id: 'r6',
-            name: '09:30 Линка 4',
-        },
-        {
-            id: 'r7',
-            name: '10:15 Линка 5',
-        }
-    ],
     events: [
         {
             id: 1,
-            start: '2017-12-18 09:30:00',
-            end: '2017-12-19 23:30:00',
-            resourceId: 'r5',
-            title: 'I am finished',
-            bgColor: '#D9D9D9',
-            showPopover: false
+            start: '2020-02-11 00:00:01',
+            end: '2020-02-11 00:00:01',
+            resourceId: 72,
+            title: 'Azimbek Sagynbaev',
         },
         {
             id: 2,

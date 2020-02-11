@@ -5,25 +5,58 @@ import "react-big-scheduler/lib/css/style.css";
 import Scheduler, { SchedulerData, ViewTypes, DATE_FORMAT } from "react-big-scheduler";
 import DemoData from "./DemoData";
 import withDragDropContext from "./withDnDContext";
+import axios from 'axios';
 
 moment.locale("ru");
 
-class Schedulerss extends Component {
+class Schedul extends Component {
   constructor(props) {
     super(props);
 
     let schedulerData = new SchedulerData(new moment().format(DATE_FORMAT), ViewTypes.Week);
     schedulerData.localeMoment.locale("ru");
-    schedulerData.setResources(DemoData.resources);
     schedulerData.setEvents(DemoData.events);
+    schedulerData.config.schedulerWidth = '80%';
 
     this.state = {
       viewModel: schedulerData,
+      positions: [],
+      shifts: [],
     };
+  }
+
+  getUsersData() {
+    axios.all([
+      axios.get(`https://ceaapi.herokuapp.com/shifts/${this.props.myParams.id}`),
+      axios.get(`https://ceaapi.herokuapp.com/positions/${this.props.myParams.id}`)
+    ])
+    .then(axios.spread((shifts, positions) => {
+      let newPositions = positions.data;
+        newPositions.forEach(element => {
+          delete element.organizationId;
+          element.name = moment(element.defaultTime).format("HH:mm") + ' ' + element.name
+          delete element.defaultTime;
+          delete element.sortOrder;
+        })
+      this.setState({ 
+        shifts: shifts.data.filter(d => d.employeeId != null).sort(function(a,b){return new Date(b.shiftDate) - new Date(a.shiftDate)}), 
+        positions: newPositions,
+        loading: false,
+      })
+      console.log(this.state.shifts);
+    }))
+      .catch(error => {
+        console.log(error);
+      });
+  }
+
+  componentDidMount() {
+    this.getUsersData();
   }
 
   render() {
     const { viewModel } = this.state;
+    viewModel.setResources(this.state.positions);
     return (
       <Scheduler
         schedulerData={viewModel}
@@ -33,18 +66,13 @@ class Schedulerss extends Component {
         onViewChange={this.onViewChange}
         eventItemClick={this.eventClicked}
         viewEventClick={this.ops1}
-        viewEventText="Ops 1"
-        viewEvent2Text="Ops 2"
+        viewEventText="Изменить"
+        viewEvent2Text="Удалить"
         viewEvent2Click={this.ops2}
         updateEventStart={this.updateEventStart}
         updateEventEnd={this.updateEventEnd}
         moveEvent={this.moveEvent}
         newEvent={this.newEvent}
-        onScrollLeft={this.onScrollLeft}
-        onScrollRight={this.onScrollRight}
-        onScrollTop={this.onScrollTop}
-        onScrollBottom={this.onScrollBottom}
-        toggleExpandFunc={this.toggleExpandFunc}
       />
     );
   }
@@ -143,45 +171,6 @@ class Schedulerss extends Component {
       viewModel: schedulerData
     });
   };
-
-  onScrollRight = (schedulerData, schedulerContent, maxScrollLeft) => {
-    if (schedulerData.ViewTypes === ViewTypes.Day) {
-      schedulerData.next();
-      schedulerData.setEvents(DemoData.events);
-      this.setState({
-        viewModel: schedulerData
-      });
-
-      schedulerContent.scrollLeft = maxScrollLeft - 10;
-    }
-  };
-
-  onScrollLeft = (schedulerData, schedulerContent, maxScrollLeft) => {
-    if (schedulerData.ViewTypes === ViewTypes.Day) {
-      schedulerData.prev();
-      schedulerData.setEvents(DemoData.events);
-      this.setState({
-        viewModel: schedulerData
-      });
-
-      schedulerContent.scrollLeft = 10;
-    }
-  };
-
-  onScrollTop = (schedulerData, schedulerContent, maxScrollTop) => {
-    console.log("onScrollTop");
-  };
-
-  onScrollBottom = (schedulerData, schedulerContent, maxScrollTop) => {
-    console.log("onScrollBottom");
-  };
-
-  toggleExpandFunc = (schedulerData, slotId) => {
-    schedulerData.toggleExpandStatus(slotId);
-    this.setState({
-      viewModel: schedulerData
-    });
-  };
 }
 
-export default withDragDropContext(Schedulerss);
+export default withDragDropContext(Schedul);

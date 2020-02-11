@@ -11,7 +11,7 @@ function UserRow(props) {
 
   return (
     <tr key={user.id.toString()}>
-      <td>{user.positionName}</td>
+      <td>{user.name}</td>
       <td>{Moment(user.defaultTime).format("LT")}</td>
       <td><Button color="primary" title="Редактировать"><i className="fa fa-pencil"></i></Button></td>
     </tr>
@@ -54,7 +54,7 @@ class Positions extends Component {
 
   handleSubmit(e) {
     const user = JSON.stringify({
-      PositionName: this.state.posName,
+      Name: this.state.posName,
       OrganizationId: parseFloat(this.props.match.params.id),
       DefaultTime: this.state.posTime,
     });

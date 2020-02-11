@@ -7,32 +7,13 @@ import 'moment/locale/ru';
 import axios from 'axios';
 import AssignShift from "./AssignShift";
 import AllShifts from "./AllShifts";
-//import { Calendar, momentLocalizer } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import Schedulerss from "./Schedulerss";
-
+import Schedul from "./Schedul";
 moment.locale('ru');
-//const localizer = momentLocalizer(moment);
 
 class Shifts extends Component {
   constructor(props) {
     super(props);
-    const now = new Date();
-    const events = [
-      {
-          id: 14,
-          title: 'Today',
-          start: new Date(new Date().setHours(new Date().getHours() + 6)),
-          end: new Date(new Date().setHours(new Date().getHours() + 9)),
-      },
-      {
-          id: 15,
-          title: 'Point in Time Event',
-          start: now,
-          end: now,
-      },
-    ]
-
 
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -44,7 +25,8 @@ class Shifts extends Component {
       shifts: [],
       loading: true,
       shiftDate: moment().add(1, 'day').format(moment.HTML5_FMT.DATE),
-      events
+      hid: true,
+      resorces: []
     };
   }
 
@@ -54,11 +36,15 @@ class Shifts extends Component {
     this.setState({ [nam]: val });
   };
 
+
   getUsersData() {
     axios
       .get(`https://ceaapi.herokuapp.com/positions/${this.props.match.params.id}`, {})
       .then(res => {
-        this.setState({ positions: res.data, loading: false });
+        this.setState({ 
+          positions: res.data,
+          loading: false 
+        });
       })
       .catch(error => {
         console.log(error);
@@ -132,6 +118,11 @@ class Shifts extends Component {
     }
   }
 
+  buildTemplate(event) {
+    let inp = document.getElementById(event.target.value);
+    inp.hidden = !inp.hidden;
+  } 
+
   render() {
     const positionsList = this.state.positions;    
     return (
@@ -156,14 +147,14 @@ class Shifts extends Component {
                   <tbody>
                     {positionsList.map((position) => (
                       <tr key={position.id.toString()}>
-                        <td>
+                        <td style={{width: '20%'}}>
                           <label className="switch switch-xs switch-pill switch-label switch-success" style={{ marginBottom:'0rem'}}>
-                            <input type="checkbox" className="switch-input" name="shifts" value={position.id} />
+                            <input type="checkbox" onClick={(event) => this.buildTemplate(event)} className="switch-input" name="shifts" value={position.id} />
                             <span className="switch-slider" data-checked="On" data-unchecked="Off"></span>
                           </label>
                         </td>
-                        <td style={{width: '46%'}}>{moment(position.defaultTime).format("HH:mm")} {position.positionName}</td>
-                        <td><Input onChange={this.handleChange} type="number" name="inps" defaultValue="1" id={position.id} required /></td>
+                        <td style={{width: '45%', fontWeight: '300'}}>{moment(position.defaultTime).format("HH:mm")} {position.name}</td>
+                        <td><Input hidden={ !this.state.hid ?  false : true } style={{height:'30px'}} type="number" name="inps" defaultValue="1" id={position.id} required /></td>
                       </tr>
                     ))}
                   </tbody>
@@ -190,20 +181,8 @@ class Shifts extends Component {
             <Card>
               <CardBody>
               <div>
-              <Schedulerss/>
-                {/* <Calendar
-                  events={this.state.events}
-                  defaultView={'week'}
-                  timeslots={1} //сколько будет ячеек во дне
-                  step={180} // шаг календаря(в минутах)
-                  views={['week', 'month', 'agenda']} 
-                  startAccessor="start"
-                  //endAccessor="end"
-                  defaultDate={moment().toDate()}
-                  localizer={localizer}
-                /> */}
+              <Schedul myParams={{ id: this.props.match.params.id }}/>
               </div>
-              
               </CardBody>
               </Card>
           </Col>
