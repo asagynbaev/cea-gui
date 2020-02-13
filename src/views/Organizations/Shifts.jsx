@@ -9,7 +9,25 @@ import AssignShift from "./AssignShift";
 import AllShifts from "./AllShifts";
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import Schedul from "./Schedul";
+//import { connect } from 'react-redux';
+//import { getShiftsSuccess } from "../../redux/_actions";
 moment.locale('ru');
+
+// const mapStateToProps = state => {
+//   return {
+//     positions: state.positions
+//   };
+// };
+
+// const mapDispatchToProps = dispatch => {
+//   return {
+//     onDelete: id => {
+//       dispatch(getShiftsSuccess(id));
+//     }
+//   };
+// };
+
+
 
 class Shifts extends Component {
   constructor(props) {

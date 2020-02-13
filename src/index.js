@@ -9,9 +9,13 @@ import App from './App';
 import * as serviceWorker from './serviceWorker';
 
 import { Provider } from 'react-redux';
-import configureStore from './redux/_store/configureStore';
+import thunk from 'redux-thunk';
+import { createStore, applyMiddleware } from 'redux';
+import rootReducer from './redux/_reducers';
+//import { getAllShifts } from './redux/_actions';
 
-const store = configureStore();
+const store = createStore(rootReducer, applyMiddleware(thunk));
+//store.dispatch(getAllShifts());
 
 
 ReactDOM.render(<Provider store={store}><App /></Provider>, document.getElementById('root'));
