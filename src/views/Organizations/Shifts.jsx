@@ -4,29 +4,24 @@ import { NotificationContainer, NotificationManager } from 'react-notifications'
 import { BeatLoader } from 'react-spinners';
 import moment from 'moment';
 import 'moment/locale/ru';
-import axios from 'axios';
+//import axios from 'axios';
 import AssignShift from "./AssignShift";
-import AllShifts from "./AllShifts";
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import Schedul from "./Schedul";
-//import { connect } from 'react-redux';
-//import { getShiftsSuccess } from "../../redux/_actions";
+import { connect } from 'react-redux';
+import { addShift } from '../../redux/_actions/shifts';
 moment.locale('ru');
 
-// const mapStateToProps = state => {
-//   return {
-//     positions: state.positions
-//   };
-// };
+const mapStateToProps = (store, state) => ({
+  positions: store.positions,
+  hasErrored: store.positionsHasErrored,
+  isLoading: store.positionsIsLoading,
+  shifts: state.shifts
+});
 
-// const mapDispatchToProps = dispatch => {
-//   return {
-//     onDelete: id => {
-//       dispatch(getShiftsSuccess(id));
-//     }
-//   };
-// };
-
+const mapDispatchToProps = dispatch =>({
+  addShift: (url, shift) => dispatch(addShift(url, shift))
+});
 
 
 class Shifts extends Component {
@@ -39,9 +34,9 @@ class Shifts extends Component {
     this.state = {
       selectedShifts: [],
       selectedItem: null,
-      positions: [],
-      shifts: [],
-      loading: true,
+      //positions: [],
+      //shifts: [],
+      //loading: true,
       shiftDate: moment().add(1, 'day').format(moment.HTML5_FMT.DATE),
       hid: true,
       resorces: []
@@ -54,25 +49,6 @@ class Shifts extends Component {
     this.setState({ [nam]: val });
   };
 
-
-  getUsersData() {
-    axios
-      .get(`https://ceaapi.herokuapp.com/positions/${this.props.match.params.id}`, {})
-      .then(res => {
-        this.setState({ 
-          positions: res.data,
-          loading: false 
-        });
-      })
-      .catch(error => {
-        console.log(error);
-      });
-  }
-
-  componentDidMount() {
-    this.getUsersData();
-  }
-
   uncheck() {
     var inputs = document.querySelectorAll('.switch-input');
     var sss = document.getElementsByName('inps');
@@ -84,6 +60,11 @@ class Shifts extends Component {
       sss[f].value = "1";
     }
   }
+
+  buildTemplate(event) {
+    let inp = document.getElementById(event.target.value);
+    inp.hidden = !inp.hidden;
+  } 
 
   save() {
     var checkboxes = document.getElementsByName('shifts');
@@ -99,10 +80,9 @@ class Shifts extends Component {
           });
         }
     }
-    console.log(vals);
     return vals;
   }
-
+  
   handleSubmit(e) {
     const vals = this.save();
     if(!Array.isArray(vals) || vals.length === 0)
@@ -111,42 +91,66 @@ class Shifts extends Component {
     }
     else
     {
-      const shift = JSON.stringify({
-        Amounts: vals,
-        ShiftDate: this.state.shiftDate,
-        OrganizationId: parseFloat(this.props.match.params.id),
-      });
-      axios.post(`https://ceaapi.herokuapp.com/shifts/`, shift, {
-          headers: { "Content-Type": "application/json" }
-        }).then(() => {
-          NotificationManager.success('Смены успешно созданы', 'Успех!', 2000);
-          this.uncheck();
-        }, (error) => {
-          NotificationManager.error('Error while Creating new shifts! ' + error, 'Error!');
-          console.log(error);
-        });
-        e.preventDefault();
-        this.setState(
-          {
-            selectedShifts: [],
-            loading: false,
-            shiftDate: moment().add(1, 'day').format(moment.HTML5_FMT.DATE)
-          }
-        );
+      const shift ={// JSON.stringify({
+          id: 527,
+          positionId: null,
+          shiftDate: "2020-02-18T23:00:01",
+          employeeId: null,
+          organizationId: 1,
+          sortOrder: null,
+          isCanceled: false,
+          canceledAt: null,
+          canceledBy: 0,
+          createdAt: "2020-02-19T01:01:19.190931"
+
+        // Amounts: vals,
+        // ShiftDate: this.state.shiftDate,
+        // OrganizationId: parseFloat(this.props.match.params.id),
+      }//);
+      e.preventDefault();
+      this.props.addShift('adsf',shift);
+      // axios.post(`https://ceaapi.herokuapp.com/shifts/`, shift, {
+      //     headers: { "Content-Type": "application/json" }
+      //   }).then(() => {
+      //     NotificationManager.success('Смены успешно созданы', 'Успех!', 2000);
+      //     this.uncheck();
+      //   }, (error) => {
+      //     NotificationManager.error('Error while Creating new shifts! ' + error, 'Error!');
+      //     console.log(error);
+      //   });
+        // this.setState(
+        //   {
+        //     selectedShifts: [],
+        //     shiftDate: moment().add(1, 'day').format(moment.HTML5_FMT.DATE)
+        //   }
+        // );
     }
   }
 
-  buildTemplate(event) {
-    let inp = document.getElementById(event.target.value);
-    inp.hidden = !inp.hidden;
-  } 
-
   render() {
-    const positionsList = this.state.positions;    
+    if (this.props.hasErrored) {
+      return <p>Sorry! There was an error loading the positions.</p>;
+    }
+
+    const positionsList = this.props.positions.filter(x => x.organizationId === parseFloat(this.props.match.params.id));
+    //const shiftList = this.props.shifts.filter(x => x.organizationId === parseFloat(this.props.match.params.id));
+    //let Sites = { ...positionsList, ...shiftList }; 
+    //console.log('merged', Sites);
     return (
       <div className="animated fadeIn">
         <Row>
-          <Col xl={3}>
+          <Col xl={12}>
+            <Card>
+              <CardBody>
+              <div>
+              <Schedul myParams={{ id: this.props.match.params.id }}/>
+              </div>
+              </CardBody>
+              </Card>
+          </Col>
+        </Row>
+        <Row>
+          <Col xl={5}>
             <Card>
             <Form id="createShift" onSubmit={this.handleSubmit}>
               <CardHeader>
@@ -171,14 +175,16 @@ class Shifts extends Component {
                             <span className="switch-slider" data-checked="On" data-unchecked="Off"></span>
                           </label>
                         </td>
-                        <td style={{width: '45%', fontWeight: '300'}}>{moment(position.defaultTime).format("HH:mm")} {position.name}</td>
+                        <td style={{width: '45%'}}>
+                          {moment(position.defaultTime).format("HH:mm")} - {moment(position.defaultTime2).format("HH:mm")} {position.name}
+                        </td>
                         <td><Input hidden={ !this.state.hid ?  false : true } style={{height:'30px'}} type="number" name="inps" defaultValue="1" id={position.id} required /></td>
                       </tr>
                     ))}
                   </tbody>
                 </Table>
                 <div className="col-xs-1 text-center">
-                  <BeatLoader sizeUnit={"px"} size={50} color={'#63c2de'} loading={this.state.loading} />
+                  <BeatLoader sizeUnit={"px"} size={50} color={'#63c2de'} loading={this.props.isLoading} />
                 </div>
                 <Button type="submit" size="sm" color="primary">
                   <i className="fa fa-dot-circle-o"></i> Создать
@@ -191,19 +197,8 @@ class Shifts extends Component {
               </Form>
             </Card>
           </Col>
-          <Col xl={4}><AssignShift myParams={{ id: this.props.match.params.id }}/></Col>
-          <Col xl={5}><AllShifts myParams={{ id: this.props.match.params.id }}/></Col>
-        </Row>
-        <Row>
-          <Col xl={12}>
-            <Card>
-              <CardBody>
-              <div>
-              <Schedul myParams={{ id: this.props.match.params.id }}/>
-              </div>
-              </CardBody>
-              </Card>
-          </Col>
+          <Col xl={7}><AssignShift myParams={{ id: this.props.match.params.id }}/></Col>
+          {/* <Col xl={5}><AllShifts myParams={{ id: this.props.match.params.id }}/></Col> */}
         </Row>
         <NotificationContainer/>
       </div>
@@ -211,4 +206,4 @@ class Shifts extends Component {
   }
 }
 
-export default Shifts;
+export default connect(mapStateToProps, mapDispatchToProps)(Shifts)

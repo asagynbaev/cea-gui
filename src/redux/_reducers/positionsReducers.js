@@ -20,7 +20,7 @@ export function positionsIsLoading(state = false, action) {
 
 export function positions(state = [], action) {
     switch (action.type) {
-        case 'POSITIONS_FETCH_DATA_SUCCESS':
+        case 'GET_POSITIONS_SUCCESS':
             return action.positions;
 
         default:

@@ -3,9 +3,22 @@ import moment from "moment";
 import "moment/locale/ru";
 import "react-big-scheduler/lib/css/style.css";
 import Scheduler, { SchedulerData, ViewTypes, DATE_FORMAT } from "react-big-scheduler";
-//import DemoData from "./DemoData";
-import withDragDropContext from "./withDnDContext";
+//import withDragDropContext from "./withDnDContext";
 import axios from 'axios';
+import { connect } from 'react-redux';
+import Modals from "./Modals";
+import { modalHasChanged } from "../../redux/_actions/modal";
+
+const mapStateToProps = state => ({
+  positions: state.positions,
+  hasErrored: state.positionsHasErrored,
+  isLoading: state.positionsIsLoading,
+  modal: state.modalHasChanged
+});
+
+const mapDispatchToProps = dispatch =>({
+  changeModal: bool => dispatch(modalHasChanged(bool))
+});
 
 moment.locale("ru");
 
@@ -15,13 +28,17 @@ class Schedul extends Component {
 
     let schedulerData = new SchedulerData(new moment().format(DATE_FORMAT), ViewTypes.Week);
     schedulerData.localeMoment.locale("ru");
-    //schedulerData.setEvents(DemoData.events);
     schedulerData.config.schedulerWidth = '80%';
 
     this.state = {
       viewModel: schedulerData,
-      positions: [],
+      //positions: [],
       shifts: [],
+      //showMessage: false,
+      positionId: null, 
+      organizationId: null,
+      shiftDate: null,
+      amount: 1
     };
   }
 
@@ -39,8 +56,8 @@ class Schedul extends Component {
           delete element.sortOrder;
         })
       this.setState({ 
-        shifts: sh.data,//.filter(d => d.employeeId != null).sort(function(a,b){return new Date(b.shiftDate) - new Date(a.shiftDate)}), 
-        positions: newPositions,
+        shifts: sh.data,
+        //positions: newPositions,
         loading: false,
       })
     }))
@@ -50,37 +67,50 @@ class Schedul extends Component {
   }
 
   componentDidMount() {
-    this.getUsersData();
+    //this.getUsersData();
   }
 
   render() {
     const { viewModel } = this.state;
+    console.log('id from scheduler is: ', this.props.myParams.id);
 
-    viewModel.setResources(this.state.positions);
+    let newPositions = this.props.positions.filter(x => x.organizationId === parseFloat(this.props.myParams.id));
+        newPositions.forEach(element => {
+          delete element.organizationId;
+          element.name = moment(element.defaultTime).format("HH:mm") + ' ' + element.name
+          delete element.defaultTime;
+          delete element.sortOrder;
+        });
+
+    viewModel.setResources(newPositions);
     viewModel.setEvents(this.state.shifts);
 
     return (
-      <Scheduler
-        schedulerData={viewModel}
-        prevClick={this.prevClick}
-        nextClick={this.nextClick}
-        onSelectDate={this.onSelectDate}
-        onViewChange={this.onViewChange}
-        eventItemClick={this.eventClicked}
-        viewEventClick={this.ops1}
-        viewEventText="Изменить"
-        viewEvent2Text="Удалить"
-        viewEvent2Click={this.ops2}
-        updateEventStart={this.updateEventStart}
-        updateEventEnd={this.updateEventEnd}
-        moveEvent={this.moveEvent}
-        newEvent={this.newEvent}
-        onScrollLeft={this.onScrollLeft}
-        onScrollRight={this.onScrollRight}
-        onScrollTop={this.onScrollTop}
-        onScrollBottom={this.onScrollBottom}
-        toggleExpandFunc={this.toggleExpandFunc}
-      />
+      <div>
+        <Scheduler
+          schedulerData={viewModel}
+          prevClick={this.prevClick}
+          nextClick={this.nextClick}
+          onSelectDate={this.onSelectDate}
+          onViewChange={this.onViewChange}
+          eventItemClick={this.eventClicked}
+          viewEventClick={this.ops1}
+          viewEventText="Изменить"
+          viewEvent2Click={this.ops2}
+          viewEvent2Text="Удалить"
+          moveEvent={this.moveEvent}
+          newEvent={this.newEvent}
+        />
+        {this.props.modal && <Modals pars={{ 
+          shiftId: this.state.shiftId,
+          positionId: this.state.positionId, 
+          organizationId: this.state.organizationId,
+          shiftDate: this.state.shiftDate,
+          amount: 1,
+          up: 2
+        }} />}
+      </div>
+      
     );
   }
 
@@ -133,86 +163,15 @@ class Schedul extends Component {
   };
 
   newEvent = (schedulerData, slotId, slotName, start, end, type, item) => {
-    let newFreshId = 0;
-    schedulerData.events.forEach((item) => {
-        if(item.id >= newFreshId)
-            newFreshId = item.id + 1;
-    });
-
-    let newEvent = {
-        id: newFreshId,
-        title: 'New event you just created',
-        start: start,
-        end: end,
-        resourceId: slotId,
-        bgColor: 'purple'
-    }
-    console.log('asdf', newEvent);
-    schedulerData.addEvent(newEvent);
     this.setState({
-        viewModel: schedulerData
-    })
-}
-
-  updateEventStart = (schedulerData, event, newStart) => {
-    schedulerData.updateEventStart(event, newStart);
-    this.setState({
-      viewModel: schedulerData
+      organizationId: this.props.myParams.id,
+      positionId: slotId,
+      amount: 1,
+      shiftDate: start,
+      //showMessage: true,
     });
-  };
-
-  updateEventEnd = (schedulerData, event, newEnd) => {
-    schedulerData.updateEventEnd(event, newEnd);
-    this.setState({
-      viewModel: schedulerData
-    });
-  };
-
-  moveEvent = (schedulerData, event, slotId, slotName, start, end) => {
-    schedulerData.moveEvent(event, slotId, slotName, start, end);
-    this.setState({
-      viewModel: schedulerData
-    });
-  };
-
-  onScrollRight = (schedulerData, schedulerContent, maxScrollLeft) => {
-    if(schedulerData.ViewTypes === ViewTypes.Day) {
-        schedulerData.next();
-        schedulerData.setEvents(this.state.shifts);
-        this.setState({
-            viewModel: schedulerData
-        });
-
-        schedulerContent.scrollLeft = maxScrollLeft - 10;
-    }
+    this.props.changeModal(true);
+  }
 }
 
-onScrollLeft = (schedulerData, schedulerContent, maxScrollLeft) => {
-    if(schedulerData.ViewTypes === ViewTypes.Day) {
-        schedulerData.prev();
-        schedulerData.setEvents(this.state.shifts);
-        this.setState({
-            viewModel: schedulerData
-        });
-
-        schedulerContent.scrollLeft = 10;
-    }
-}
-
-onScrollTop = (schedulerData, schedulerContent, maxScrollTop) => {
-    console.log('onScrollTop');
-}
-
-onScrollBottom = (schedulerData, schedulerContent, maxScrollTop) => {
-    console.log('onScrollBottom');
-}
-
-toggleExpandFunc = (schedulerData, slotId) => {
-    schedulerData.toggleExpandStatus(slotId);
-    this.setState({
-        viewModel: schedulerData
-    });
-}
-}
-
-export default withDragDropContext(Schedul);
+export default connect(mapStateToProps, mapDispatchToProps)(Schedul)

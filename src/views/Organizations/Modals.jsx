@@ -3,6 +3,17 @@ import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
 import ReactAutocomplete from 'react-autocomplete';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import axios from 'axios';
+import { connect } from 'react-redux';
+import { modalHasChanged } from '../../redux/_actions/modal';
+
+const mapStateToProps = (store, state) => ({
+    autocomplete: store.employeesForAutocomplete,
+    modal: store.modalHasChanged
+  });
+  
+  const mapDispatchToProps = dispatch =>({
+    changeModal: bool => dispatch(modalHasChanged(bool))
+  });
 
 class Modals extends React.Component {
     constructor(props) {
@@ -12,9 +23,9 @@ class Modals extends React.Component {
         this.toggle_save = this.toggle_save.bind(this);
         
         this.state = {
-            modal: false,
+            //modal: false,
             value: '',
-            userId: null
+            userId: null,
         };
     }
 
@@ -25,24 +36,62 @@ class Modals extends React.Component {
     }
 
     toggle() {
-        this.setState({ modal: !this.state.modal });
+        this.props.changeModal(!this.props.modal);
+        //this.setState({ modal: !this.state.modal });
       }
+
     toggle_save(e) {
+        var myDate = new Date(this.props.pars.shiftDate);
+        myDate.setDate(myDate.getDate() + 1);
     if(this.state.userId === null) {
         NotificationManager.error('Вы не выбрали ни одного сотрудника', 'Ошибка!', 2000);
     }
     else {
         const user = JSON.stringify({
-        Id: parseFloat(this.props.pars.id),
-        EmployeeId: parseFloat(this.state.userId),
+            EmployeeId: parseFloat(this.state.userId),
+            positionId: parseFloat(this.props.pars.positionId),
+            OrganizationId: parseFloat(this.props.pars.organizationId),
+            Amount: parseFloat(this.props.pars.amount),
+            ShiftDate: new Date(myDate)
         });
-        axios.put(`https://ceaapi.herokuapp.com/shifts/${this.state.userId}`, user, {
+        const user1 = JSON.stringify({
+            Id: parseFloat(this.props.pars.shiftId),
+            EmployeeId: parseFloat(this.state.userId),
+        });
+        if(this.props.pars.up === 2) {
+            axios.post(`https://ceaapi.herokuapp.com/shifts/`, user, {
             headers: { "Content-Type": "application/json" }
         }).then((response) => {
             NotificationManager.success('Смена успешно назначена!', 'Успех!', 2000);
         }, (error) => {
-            NotificationManager.error('Error while changing an organization! ' + error, 'Error!');
-        });
+            NotificationManager.error('Ошибка при сохранении позиции! ' + error, 'Ошибка!');
+          })
+          .catch(error => {
+            console.log(error);
+          });
+        }
+        if(this.props.pars.up === 5) {
+            axios.put(`https://ceaapi.herokuapp.com/shifts/${this.props.pars.shiftId}`, user1, {
+            headers: { "Content-Type": "application/json" }
+            }).then((response) => {
+                NotificationManager.success('Смена успешно назначена!', 'Успех!', 2000);
+            }, (error) => {
+                NotificationManager.error('Ошибка при сохранении позиции! ' + error, 'Ошибка!');
+                if (error.response) {
+                  console.log(error.response.data);
+                  console.log(error.response.status);
+                  console.log(error.response.headers);
+              } else if (error.request) {
+                  console.log(error.request);
+              } else {
+                  console.log('Error', error.message);
+              }
+              console.log(error);
+              })
+              .catch(error => {
+                console.log(error);
+              });
+        }
         e.preventDefault();
         this.setState(
             { 
@@ -50,27 +99,28 @@ class Modals extends React.Component {
             userId: null, 
             value: '', 
             modal: !this.state.modal,
+            //employees: []
             });
         }
     }
 
-    componentDidMount() {
-        this.setState({ modal: true });
-    }
+    // componentDidMount() {
+    //     this.setState({ modal: true });
+    // }
 
-    componentWillReceiveProps() {
-        this.setState({ modal: true });
-    }
+    // componentWillReceiveProps() {
+    //     this.setState({ modal: true });
+    // }
 
     render() {
         return(
             <div>
-                <Modal isOpen={this.state.modal} toggle={this.toggle} className={this.props.className}>
+                <Modal isOpen={this.props.modal} toggle={this.toggle} className={this.props.className}>
                     <ModalHeader toggle={this.toggle}>Назначение смены</ModalHeader>
                     <ModalBody>
                         <p>Кликните по текстовому полю, или начните вводить имя или фамилию, и выберите из списка сотрудника.</p>
                         <ReactAutocomplete
-                        items={this.props.pars.users}
+                        items={this.props.autocomplete}
                         shouldItemRender={(item, value) => item.fullName.toLowerCase().indexOf(value.toLowerCase()) > -1}
                         getItemValue={item => item.fullName}
                         renderItem={(item, highlighted) =>
@@ -93,4 +143,5 @@ class Modals extends React.Component {
         );
     }
 }
-export default Modals;
+
+export default connect(mapStateToProps, mapDispatchToProps)(Modals)

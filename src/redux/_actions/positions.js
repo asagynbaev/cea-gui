@@ -1,6 +1,3 @@
-import axios from 'axios';
-const apiUrl = `https://ceaapi.herokuapp.com/`;
-
 export function positionsHasErrored(bool) {
     return {
         type: 'POSITIONS_HAS_ERRORED',
@@ -17,7 +14,7 @@ export function positionsIsLoading(bool) {
 
 export function positionsFetchDataSuccess(positions) {
     return {
-        type: 'POSITIONS_FETCH_DATA_SUCCESS',
+        type: 'GET_POSITIONS_SUCCESS',
         positions
     };
 }
@@ -31,7 +28,9 @@ export function positionsFetchData(url) {
                 if (!response.ok) {
                     throw Error(response.statusText);
                 }
+
                 dispatch(positionsIsLoading(false));
+
                 return response;
             })
             .then((response) => response.json())
