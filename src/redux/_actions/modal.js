@@ -1,8 +1,8 @@
 import { MODAL_HAS_CHANGED } from './types';
 
-export function modalHasChanged(hasChanged) {
+export function modalHasChanged(modalData) {
     return {
         type: MODAL_HAS_CHANGED,
-        hasChanged
+        modalData
     };
 }

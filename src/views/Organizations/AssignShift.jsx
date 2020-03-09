@@ -6,30 +6,28 @@ import { BeatLoader } from 'react-spinners';
 import moment from 'moment';
 import axios from 'axios';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
-import Modals from "./Modals";
 import { connect } from 'react-redux';
-import { shiftsFetchData } from '../../redux/_actions/shifts';
 import { modalHasChanged } from "../../redux/_actions/modal";
+import { deleteShift } from '../../redux/_actions/shifts';
 
 
 const mapStateToProps = state => {
   return {
       shifts: state.shifts,
+      positions: state.positions,
       hasErrored: state.shiftsHasErrored,
-      isLoading: state.shiftsIsLoading,
-      modal: state.modalHasChanged
+      isLoading: state.shiftsIsLoading
   };
 };
 
 const mapDispatchToProps = (dispatch) => {
   return {
-      fetchData: (url) => dispatch(shiftsFetchData(url)),
-      changeModal: bool => dispatch(modalHasChanged(bool))
+      changeModal: data => dispatch(modalHasChanged(data)),
+      delete: (shiftId) => dispatch(deleteShift(shiftId))
   };
 };
 
 class AssignShift extends Component {
-
   // constructor(props) {
   //   super(props);
   //   this.pageSize = 8;
@@ -50,21 +48,12 @@ class AssignShift extends Component {
   }
 
   _showMessage = (bool, int) => {
-    this.props.changeModal(bool);
-    this.setState({
-      //showMessage: bool,
-      shiftId: int
-    });
+    this.props.changeModal({modal: bool, shiftId: int});
   };
   
   handleDelete = (itemId) => {
-    axios.delete(`https://ceaapi.herokuapp.com/shifts/${itemId}`)
-    .then(response => {
-      NotificationManager.success('Смена успешно удалена!', 'Успех!', 2000);
-    }, (error) => {
-      NotificationManager.error('Error while deleting shift! ' + error, 'Error!');
-      console.log(error);
-    });
+    this.props.delete(itemId);
+    NotificationManager.success('Смена успешно удалена!', 'Успех!', 2000);
   }
 
   cancelShift = (itemId) => {
@@ -80,16 +69,12 @@ class AssignShift extends Component {
           NotificationManager.error('Error while cancelling shift! ' + error, 'Error!');
       });
       this.setState(
-          { 
+        { 
           selectedItem: null, 
           shiftId: null, 
           value: '', 
           modal: !this.state.modal,
-          });
-  }
-
-  componentDidMount() {
-    this.props.fetchData(`https://ceaapi.herokuapp.com/shifts/${this.props.myParams.id}`);
+      });
   }
 
   render() {
@@ -97,8 +82,6 @@ class AssignShift extends Component {
       .filter(d => d.isCanceled === false)
       .filter(x => x.employeeId === null)
       .sort(function(a,b){ return new Date(a.shiftDate) - new Date(b.shiftDate)});
-    // const currentPage = this.state.currentPage;
-    console.log('id from assignShift is: ', this.props.myParams.id);
     
     return (
       <div className="animated fadeIn">
@@ -118,9 +101,9 @@ class AssignShift extends Component {
                 <tbody>
                 {shiftList//.slice(currentPage * this.pageSize, (currentPage + 1) * this.pageSize).
                 .map((shift) => (
-                    <tr key={shift.id.toString()}>
+                  <tr key={shift.id.toString()}>
                     <td>{moment(shift.shiftDate).format("DD-MM-YYYY")}</td>
-                    <td>{moment(shift.defaultTime).format("HH:mm")} {shift.positionName}</td>
+                    <td>{shift.positionName}</td>
                     <td>
                       <Button onClick={this._showMessage.bind(null, true, shift.id)}  color="primary" title="Назначить смену">
                         <i className="fa fa-arrow-right"></i>
@@ -159,7 +142,6 @@ class AssignShift extends Component {
             </CardBody>
           </Card>
           <NotificationContainer/>
-          {this.props.modal && <Modals pars={{ up: 5, shiftId: this.state.shiftId }} />}
       </div>
     );
   }

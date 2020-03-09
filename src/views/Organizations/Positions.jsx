@@ -61,7 +61,7 @@ class Positions extends Component {
         headers: { "Content-Type": "application/json" }
       }).then((response) => {
         NotificationManager.success('Вы успешно добавили позицию!', 'Успех!', 3000);
-        this.getUsersData();
+        //this.getUsersData();
         console.log(response);
       }, (error) => {
         NotificationManager.error('Ошибка при сохранении позиции! ' + error, 'Ошибка!');

@@ -22,25 +22,25 @@ class EditOrganization extends Component {
     this.props.history.goBack();
   }
 
-  getUsersData() {
-    axios.get(`https://ceaapi.herokuapp.com/organizations/`, {})
-        .then(res => { 
-          this.setState({users: res.data}) 
-          const userDet = this.state.users.find( user => user.id.toString() === this.props.myParams.id)
-          this.setState(
-            {
-                name: userDet.name,
-                address: userDet.address,
-                dressCode: userDet.dressCode,
-                phone: userDet.phone,
-              }
-          )
-        })
-        .catch((error) => { console.log(error) })
-  }
-  componentDidMount(){
-    this.getUsersData()
-  }
+  // getUsersData() {
+  //   axios.get(`https://ceaapi.herokuapp.com/organizations/`, {})
+  //       .then(res => { 
+  //         this.setState({users: res.data}) 
+  //         const userDet = this.state.users.find( user => user.id.toString() === this.props.myParams.id)
+  //         this.setState(
+  //           {
+  //               name: userDet.name,
+  //               address: userDet.address,
+  //               dressCode: userDet.dressCode,
+  //               phone: userDet.phone,
+  //             }
+  //         )
+  //       })
+  //       .catch((error) => { console.log(error) })
+  // }
+  // componentDidMount(){
+  //   this.getUsersData()
+  // }
 
   handleChange = e => {
     let nam = e.target.name;

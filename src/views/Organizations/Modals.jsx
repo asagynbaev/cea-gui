@@ -2,17 +2,19 @@ import React from 'react';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
 import ReactAutocomplete from 'react-autocomplete';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
-import axios from 'axios';
+// import axios from 'axios';
 import { connect } from 'react-redux';
 import { modalHasChanged } from '../../redux/_actions/modal';
+import { assingShift } from '../../redux/_actions/shifts';
 
-const mapStateToProps = (store, state) => ({
-    autocomplete: store.employeesForAutocomplete,
-    modal: store.modalHasChanged
+const mapStateToProps = (state) => ({
+    autocomplete: state.employeesForAutocomplete,
+    modal: state.modalHasChanged
   });
   
   const mapDispatchToProps = dispatch =>({
-    changeModal: bool => dispatch(modalHasChanged(bool))
+    changeModal: modalData => dispatch(modalHasChanged(modalData)),
+    assingShift: (url, data) => dispatch(assingShift(url, data)),
   });
 
 class Modals extends React.Component {
@@ -23,7 +25,6 @@ class Modals extends React.Component {
         this.toggle_save = this.toggle_save.bind(this);
         
         this.state = {
-            //modal: false,
             value: '',
             userId: null,
         };
@@ -37,80 +38,24 @@ class Modals extends React.Component {
 
     toggle() {
         this.props.changeModal(!this.props.modal);
-        //this.setState({ modal: !this.state.modal });
       }
 
-    toggle_save(e) {
-        var myDate = new Date(this.props.pars.shiftDate);
-        myDate.setDate(myDate.getDate() + 1);
-    if(this.state.userId === null) {
-        NotificationManager.error('Вы не выбрали ни одного сотрудника', 'Ошибка!', 2000);
-    }
-    else {
-        const user = JSON.stringify({
-            EmployeeId: parseFloat(this.state.userId),
-            positionId: parseFloat(this.props.pars.positionId),
-            OrganizationId: parseFloat(this.props.pars.organizationId),
-            Amount: parseFloat(this.props.pars.amount),
-            ShiftDate: new Date(myDate)
-        });
-        const user1 = JSON.stringify({
-            Id: parseFloat(this.props.pars.shiftId),
-            EmployeeId: parseFloat(this.state.userId),
-        });
-        if(this.props.pars.up === 2) {
-            axios.post(`https://ceaapi.herokuapp.com/shifts/`, user, {
-            headers: { "Content-Type": "application/json" }
-        }).then((response) => {
+    toggle_save() {
+        if(this.state.userId === null) {
+            NotificationManager.error('Вы не выбрали ни одного сотрудника', 'Ошибка!', 2000);
+        }
+        else {
+            const shift = {
+                Id: parseFloat(this.props.modal.shiftId),
+                EmployeeId: parseFloat(this.state.userId),
+            }
+
+            this.props.assingShift(`http://localhost:5000/shifts/${this.props.modal.shiftId}`, shift)
+            this.props.changeModal(!this.props.modal);
             NotificationManager.success('Смена успешно назначена!', 'Успех!', 2000);
-        }, (error) => {
-            NotificationManager.error('Ошибка при сохранении позиции! ' + error, 'Ошибка!');
-          })
-          .catch(error => {
-            console.log(error);
-          });
         }
-        if(this.props.pars.up === 5) {
-            axios.put(`https://ceaapi.herokuapp.com/shifts/${this.props.pars.shiftId}`, user1, {
-            headers: { "Content-Type": "application/json" }
-            }).then((response) => {
-                NotificationManager.success('Смена успешно назначена!', 'Успех!', 2000);
-            }, (error) => {
-                NotificationManager.error('Ошибка при сохранении позиции! ' + error, 'Ошибка!');
-                if (error.response) {
-                  console.log(error.response.data);
-                  console.log(error.response.status);
-                  console.log(error.response.headers);
-              } else if (error.request) {
-                  console.log(error.request);
-              } else {
-                  console.log('Error', error.message);
-              }
-              console.log(error);
-              })
-              .catch(error => {
-                console.log(error);
-              });
-        }
-        e.preventDefault();
-        this.setState(
-            { 
-            selectedItem: null, 
-            userId: null, 
-            value: '', 
-            modal: !this.state.modal,
-            //employees: []
-            });
-        }
+        this.setState({ userId: null, value: '' })
     }
-
-    // componentDidMount() {
-    //     this.setState({ modal: true });
-    // }
-
-    // componentWillReceiveProps() {
-    //     this.setState({ modal: true });
-    // }
 
     render() {
         return(

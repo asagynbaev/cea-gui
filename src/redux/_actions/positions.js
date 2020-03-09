@@ -30,7 +30,7 @@ export function positionsFetchData(url) {
                 }
 
                 dispatch(positionsIsLoading(false));
-
+                
                 return response;
             })
             .then((response) => response.json())

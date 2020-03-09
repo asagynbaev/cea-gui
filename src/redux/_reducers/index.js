@@ -18,5 +18,5 @@ export default combineReducers({
     employeesHasErrored,
     employeesIsLoading,
 
-    modalHasChanged
+    modalHasChanged,
 });

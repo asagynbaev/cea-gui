@@ -4,8 +4,8 @@ import 'react-notifications/lib/notifications.css';
 import { NotificationContainer } from 'react-notifications';
 
 import { connect } from 'react-redux';
-import { positionsFetchData } from './redux/_actions/positions';
 import { getEmployeesForAutocompleteFetchData } from './redux/_actions/employees';
+import { positionsFetchData } from './redux/_actions/positions';
 
 import './App.scss';
 
@@ -34,7 +34,7 @@ const Page500 = React.lazy(() => import('./views/Pages/Page500'));
 class App extends Component {
   
   componentDidMount() {
-    this.props.positions(`https://ceaapi.herokuapp.com/positions/`);
+    this.props.positions(`http://localhost:5000/positions/`);
     this.props.employeesForAutocomplete(`https://ceaapi.herokuapp.com/employees/autocomplete`); 
   }
   
