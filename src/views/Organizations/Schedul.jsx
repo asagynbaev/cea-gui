@@ -29,13 +29,13 @@ class Schedul extends Component {
     let schedulerData = new SchedulerData(new moment().format(DATE_FORMAT), ViewTypes.Week, false, false,
     {
       views: [
-          {viewName: 'Day', viewType: ViewTypes.Day},
           {viewName: 'Week', viewType: ViewTypes.Week},
           {viewName: 'Month', viewType: ViewTypes.Month},
       ]
   });
     schedulerData.localeMoment.locale("ru");
     schedulerData.config.schedulerWidth = '80%';
+    //schedulerData.config.agendaResourceTableWidth = 10;
 
     this.state = {
       viewModel: schedulerData,
@@ -46,8 +46,12 @@ class Schedul extends Component {
     const { viewModel } = this.state;
     const positionsList = this.props.positions.filter(x => x.organizationId === parseFloat(this.props.myParams.id));
 
+    const shiftList = this.props.shifts
+      .filter(y => y.organizationId === parseFloat(this.props.myParams.id))
+      .filter(d => d.isCanceled === false);
+
     viewModel.setResources(positionsList);
-    viewModel.setEvents(this.props.shifts);
+    viewModel.setEvents(shiftList);
 
     return (
       <div>

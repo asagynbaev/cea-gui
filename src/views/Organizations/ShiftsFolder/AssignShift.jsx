@@ -1,14 +1,13 @@
 import React, { Component } from "react";
-import { 
-  Card, CardBody, CardHeader, Table, Button, //Pagination, PaginationItem, PaginationLink
+import { Card, CardBody, CardHeader, Table, Button, // Pagination, PaginationItem, PaginationLink
 } from "reactstrap";
 import { BeatLoader } from 'react-spinners';
 import moment from 'moment';
-import axios from 'axios';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import { connect } from 'react-redux';
-import { modalHasChanged } from "../../redux/_actions/modal";
-import { deleteShift } from '../../redux/_actions/shifts';
+import { modalHasChanged } from "../../../redux/_actions/modal";
+import { deleteShift, cancelShift } from '../../../redux/_actions/shifts';
+
 
 
 const mapStateToProps = state => {
@@ -23,7 +22,8 @@ const mapStateToProps = state => {
 const mapDispatchToProps = (dispatch) => {
   return {
       changeModal: data => dispatch(modalHasChanged(data)),
-      delete: (shiftId) => dispatch(deleteShift(shiftId))
+      delete: (shiftId) => dispatch(deleteShift(shiftId)),
+      cancel: (url, shift) => dispatch(cancelShift(url, shift)),
   };
 };
 
@@ -31,21 +31,18 @@ class AssignShift extends Component {
   // constructor(props) {
   //   super(props);
   //   this.pageSize = 8;
-
   //   this.state = {
-  //       shiftId: null,
   //       pagesCount: 0,
   //       currentPage: 0,
-  //       shiftDate: moment().add(1, 'day').format(moment.HTML5_FMT.DATE)
   //   };
   // }
 
-  handleClick(e, index) {
-    e.preventDefault();
-    this.setState({
-      currentPage: index
-    });
-  }
+  // handleClick(e, index) {
+  //   e.preventDefault();
+  //   this.setState({
+  //     currentPage: index
+  //   });
+  // }
 
   _showMessage = (bool, int) => {
     this.props.changeModal({modal: bool, shiftId: int});
@@ -57,24 +54,13 @@ class AssignShift extends Component {
   }
 
   cancelShift = (itemId) => {
-    const user = JSON.stringify({
+    const shift = {
       Id: parseFloat(itemId),
       IsCanceled: true,
-      });
-      axios.put(`https://ceaapi.herokuapp.com/shifts/${itemId}`, user, {
-          headers: { "Content-Type": "application/json" }
-      }).then((response) => {
-          NotificationManager.success('Смена успешно отменена!', 'Успех!', 2000);
-      }, (error) => {
-          NotificationManager.error('Error while cancelling shift! ' + error, 'Error!');
-      });
-      this.setState(
-        { 
-          selectedItem: null, 
-          shiftId: null, 
-          value: '', 
-          modal: !this.state.modal,
-      });
+    }
+
+      this.props.cancel(`http://localhost:5000/shifts/${itemId}`, shift);
+      NotificationManager.success('Смена успешно отменена!', 'Успех!', 2000);
   }
 
   render() {
@@ -82,6 +68,8 @@ class AssignShift extends Component {
       .filter(d => d.isCanceled === false)
       .filter(x => x.employeeId === null)
       .sort(function(a,b){ return new Date(a.shiftDate) - new Date(b.shiftDate)});
+
+    // const currentPage = this.state.currentPage;
     
     return (
       <div className="animated fadeIn">
@@ -99,7 +87,7 @@ class AssignShift extends Component {
                   </tr>
                 </thead>
                 <tbody>
-                {shiftList//.slice(currentPage * this.pageSize, (currentPage + 1) * this.pageSize).
+                {shiftList// .slice(currentPage * this.pageSize, (currentPage + 1) * this.pageSize)
                 .map((shift) => (
                   <tr key={shift.id.toString()}>
                     <td>{moment(shift.shiftDate).format("DD-MM-YYYY")}</td>
@@ -119,8 +107,8 @@ class AssignShift extends Component {
                   ))}
                 </tbody>
               </Table>
-              <div className="pagination-wrapper">
-                  {/* <Pagination aria-label="Page navigation example">
+              {/* <div className="pagination-wrapper">
+                  <Pagination aria-label="Page navigation example">
                     <PaginationItem disabled={currentPage <= 0}>
                       <PaginationLink onClick={e => this.handleClick(e, currentPage - 1)} previous href="#" />
                     </PaginationItem>
@@ -134,8 +122,8 @@ class AssignShift extends Component {
                     <PaginationItem disabled={currentPage >= this.state.pagesCount - 1}>
                       <PaginationLink onClick={e => this.handleClick(e, currentPage + 1)} next href="#" />
                     </PaginationItem>
-                  </Pagination> */}
-                </div>
+                  </Pagination>
+                </div> */}
               <div className="col-xs-1 text-center">
                 <BeatLoader sizeUnit={"px"} size={50} color={'#63c2de'} loading={this.props.isLoading} />
               </div>

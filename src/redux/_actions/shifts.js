@@ -6,7 +6,8 @@ import {
     SHIFTS_HAS_ERRORED, 
     SHIFTS_IS_LOADING,
     DELETE_SHIFT,
-    ASSIGN_SHIFT
+    ASSIGN_SHIFT,
+    CANCEL_SHIFT
 } from './types';
 
 export function shiftsHasErrored(bool) {
@@ -93,12 +94,11 @@ export function assingShift(url, shift) {
 }
 
 export function cancelShiftSuccess(data) {
-  return {type: ASSIGN_SHIFT, data}
+  return {type: CANCEL_SHIFT, data}
 }
 
 export function cancelShift(url, shift) {
   return function(dispatch) {
-    console.log(shift);
     return axios.put(url, shift, {
       headers: { "Content-Type": "application/json" }
   }).then((response) => {

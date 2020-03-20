@@ -4,10 +4,9 @@ import { NotificationContainer, NotificationManager } from 'react-notifications'
 import { BeatLoader } from 'react-spinners';
 import moment from 'moment';
 import 'moment/locale/ru';
-//import axios from 'axios';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { connect } from 'react-redux';
-import { addShift } from '../../redux/_actions/shifts';
+import { addShift } from '../../../redux/_actions/shifts';
 moment.locale('ru');
 
 const mapStateToProps = store => ({
@@ -32,12 +31,8 @@ class CreateShifts extends Component {
     this.state = {
       selectedShifts: [],
       selectedItem: null,
-      //positions: [],
-      //shifts: [],
-      //loading: true,
       shiftDate: moment().add(1, 'day').format(moment.HTML5_FMT.DATE),
       hid: true,
-      //resorces: []
     };
   }
 
@@ -53,13 +48,14 @@ class CreateShifts extends Component {
     for (var i = 0; i < inputs.length; i++) {
       inputs[i].checked = false;
     }
-    for(var f = 0; f < sss.length; f++)
+    for(var j = 0; j < sss.length; j++)
     {
-      sss[f].value = "1";
+      sss[j].value = "1";
+      sss[j].hidden = true;
     }
   }
 
-  buildTemplate(event) {
+  hideInputs(event) {
     let inp = document.getElementById(event.target.value);
     inp.hidden = !inp.hidden;
   } 
@@ -126,7 +122,7 @@ class CreateShifts extends Component {
                       <tr key={position.id.toString()}>
                         <td style={{width: '20%'}}>
                           <label className="switch switch-xs switch-pill switch-label switch-success" style={{ marginBottom:'0rem'}}>
-                            <input type="checkbox" onClick={(event) => this.buildTemplate(event)} className="switch-input" name="shifts" value={position.id} />
+                            <input type="checkbox" onClick={(event) => this.hideInputs(event)} className="switch-input" name="shifts" value={position.id} />
                             <span className="switch-slider" data-checked="On" data-unchecked="Off"></span>
                           </label>
                         </td>
